@@ -14,6 +14,6 @@ Transform your JSON data into fully functional Mongoose schemas with ease. This 
 Clone the repository and install the necessary dependencies:
 
 ```bash
-git clone https://github.com/yourusername/mongoose-schema-converter.git
-cd mongoose-schema-converter
+git clone https://github.com/ankitarora05/json2mongoose.git
+cd json2mongoose
 live-server
