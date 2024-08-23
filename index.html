@@ -1,0 +1,196 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+    <!-- when using the mode "code", it's important to specify charset utf-8 -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="title" content="Mongoose Schema Generator - Automatically Generate Mongoose Schemas from JSON">
+    <meta name="description"
+        content="Easily generate Mongoose schemas from JSON objects with our Mongoose Schema Generator. Handle mixed data types, arrays, and nested objects seamlessly for MongoDB projects.">
+    <meta name="keywords"
+        content="Mongoose, Schema Generator, JSON to Schema, MongoDB, Node.js, Automated Schema, Mixed Types, Nested Objects, Arrays, JavaScript, Backend Development">
+    <meta name="author" content="Bubble Media Technology">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="English">
+
+    <link href="/scripts/jsoneditor.css" rel="stylesheet" type="text/css">
+    <script src="/scripts/jsoneditor.min.js"
+        integrity="sha512-PInE2t9LrzM/U5c/sB27ZCv/thNDKIA1DgRBzOcvaq21qlnQ/yI/YvzJMLdzsM1MvmX9j4TQLFi8+2+rTkdR4w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .json-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: 1fr;
+            grid-column-gap: 10px;
+            grid-row-gap: 0px;
+        }
+
+        .page-title {
+            width: 100%;
+            padding: 5px;
+            border-bottom: 1px solid #dedede;
+            text-align: center;
+        }
+
+        .json-title {
+            font-size: 18px;
+            font-weight: bold;
+            padding: 8px 4px;
+            text-align: center;
+        }
+
+        .json-reader {
+            height: 80vh;
+        }
+
+        #jsoneditor {
+            height: 75vh;
+        }
+
+        #jsoneditorMongoose {
+            height: 75vh;
+        }
+
+        .page-footer {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-title">
+        <h2>Mongoose Schema Generator</h2>
+    </div>
+    <div class="json-container">
+        <div class="json-reader">
+            <div class="json-title">JSON</div>
+            <div id="jsoneditor"></div>
+        </div>
+        <div class="json-reader">
+            <div class="json-title">Mongoose Schema</div>
+            <div id="jsoneditorMongoose"></div>
+        </div>
+    </div>
+    <div class="page-footer">
+        <h3>Ankit Arora, <a href="https://www.linkedin.com/in/ankit-arora-86a7b237/" target="_blank">Follow me</a></h3>
+    </div>
+
+    <script await>
+        // Function to generate Mongoose schema from JSON
+        function convertJsonToMongooseSchema(json) {
+            const schema = {};
+
+            for (const key in json) {
+                const value = json[key];
+
+                if (Array.isArray(value)) {
+                    // Handle arrays
+                    if (value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
+                        // If array contains objects
+                        schema[key] = [{ type: "Mixed" }];
+                    } else {
+                        // If array contains primitive types
+                        schema[key] = [{ type: getType(value[0]) }];
+                    }
+                } else if (typeof value === 'object' && value !== null) {
+                    // Handle nested objects
+                    schema[key] = {
+                        type: convertJsonToMongooseSchema(value)
+                    };
+                } else {
+                    // Handle primitive types
+                    schema[key] = { type: getType(value) };
+                }
+            }
+
+            return schema;
+        }
+
+        // Helper function to map JavaScript types to Mongoose schema types
+        function getType(value) {
+            if (typeof value === 'string') return "String";
+            if (typeof value === 'number') return "Number";
+            if (typeof value === 'boolean') return "Boolean";
+            if (value instanceof Date || !isNaN(Date.parse(value))) return "Date";
+            if (typeof value === 'object') return "Mixed";
+            return "Mixed"; // Fallback for any other types
+        }
+        // Generate the Mongoose schema
+
+    </script>
+
+    <script await>
+        // create the editor
+        const container = document.getElementById("jsoneditor")
+        const options = {
+            'mode': 'code',
+            onChangeText: function (jsonString) {
+                debugger;
+                let json = JSON.parse(jsonString.replaceAll("^\"|\"$", ""));
+                editor.set(json);
+                const initialJsonResult = convertJsonToMongooseSchema(json);
+                editorResult.set(initialJsonResult);
+                console.log(initialJsonResult)
+                const updatedJsonResult = editorResult.get();
+            }
+        }
+        const editor = new JSONEditor(container, options)
+
+        // set json
+        const initialJson = {
+            "name": "John Doe",
+            "age": 30,
+            "email": "john.doe@example.com",
+            "isActive": true,
+            "roles": [
+                { "role": "admin", "level": 1 },
+                { "role": "user", "access": ["read", "write"] }
+            ],
+            "history": [
+                { "event": "login", "timestamp": "2024-08-10T12:00:00Z" },
+                { "event": "purchase", "item": "laptop", "price": 1200 }
+            ]
+        };
+        editor.set(initialJson);
+
+        // get json
+        const updatedJson = editor.get()
+    </script>
+
+    <script await>
+        // create the editor
+        const containerResult = document.getElementById("jsoneditorMongoose")
+        const optionsResult = {
+            mode: 'text',
+            modes: ['text', 'code'],
+            onEditable: function (node) {
+                if (!node.path) {
+                    // In modes code and text, node is empty: no path, field, or value
+                    // returning false makes the text area read-only
+                    return false;
+                }
+            },
+        }
+        const editorResult = new JSONEditor(containerResult, optionsResult)
+        const initialJsonResult = convertJsonToMongooseSchema(initialJson);
+        editorResult.set(initialJsonResult);
+
+        // get json
+        const updatedJsonResult = editor.get()
+    </script>
+</body>
+
+</html>
