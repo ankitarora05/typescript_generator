@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+    <title>Mongoose Schema Generator - Automatically Generate Mongoose Schemas from JSON</title>
     <!-- when using the mode "code", it's important to specify charset utf-8 -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +17,22 @@
     <meta name="author" content="Bubble Media Technology">
     <meta name="robots" content="index, follow">
     <meta name="language" content="English">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://json2mongoose.netlify.app/">
+    <meta property="og:title" content="JSON to Mongoose Schema Converter - Automatically Generate Mongoose Schema">
+    <meta property="og:description"
+        content="Easily convert JSON objects to Mongoose schema definitions with our JSON to Mongoose Schema Converter. Simplify backend development with auto-generated schema types for MongoDB and Node.js.">
+    <meta property="og:image" content="https://miro.medium.com/v2/resize:fit:1400/1*rL8Buu7o6jnG-TYV1WubeQ.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://json2mongoose.netlify.app/">
+    <meta property="twitter:title" content="JSON to Mongoose Schema Converter - Automatically Generate Mongoose Schema">
+    <meta property="twitter:description"
+        content="Easily convert JSON objects to Mongoose schema definitions with our JSON to Mongoose Schema Converter. Simplify backend development with auto-generated schema types for MongoDB and Node.js.">
+    <meta property="twitter:image" content="https://miro.medium.com/v2/resize:fit:1400/1*rL8Buu7o6jnG-TYV1WubeQ.png">
 
     <link href="/scripts/jsoneditor.css" rel="stylesheet" type="text/css">
     <script src="/scripts/jsoneditor.min.js"
@@ -43,6 +60,7 @@
             padding: 5px;
             border-bottom: 1px solid #dedede;
             text-align: center;
+            background: rgb(3 30 255 / 10%);
         }
 
         .json-title {
@@ -89,7 +107,7 @@
     </div>
 
     <script await>
-        // Function to generate Mongoose schema from JSON
+        // Function to convert JSON to Mongoose schema JSON
         function convertJsonToMongooseSchema(json) {
             const schema = {};
 
@@ -97,22 +115,19 @@
                 const value = json[key];
 
                 if (Array.isArray(value)) {
-                    // Handle arrays
                     if (value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
-                        // If array contains objects
-                        schema[key] = [{ type: "Mixed" }];
+                        // If the array contains objects, recursively generate the schema for the objects
+                        schema[key] = [convertJsonToMongooseSchema(value[0])];
                     } else {
-                        // If array contains primitive types
-                        schema[key] = [{ type: getType(value[0]) }];
+                        // If the array contains primitive types
+                        schema[key] = [getType(value[0])];
                     }
                 } else if (typeof value === 'object' && value !== null) {
-                    // Handle nested objects
-                    schema[key] = {
-                        type: convertJsonToMongooseSchema(value)
-                    };
+                    // Handle nested objects by recursively generating schema
+                    schema[key] = convertJsonToMongooseSchema(value);
                 } else {
                     // Handle primitive types
-                    schema[key] = { type: getType(value) };
+                    schema[key] = getType(value);
                 }
             }
 
@@ -125,7 +140,7 @@
             if (typeof value === 'number') return "Number";
             if (typeof value === 'boolean') return "Boolean";
             if (value instanceof Date || !isNaN(Date.parse(value))) return "Date";
-            if (typeof value === 'object') return "Mixed";
+            if (typeof value === 'object') return "Mixed"; // Use Mixed for unknown or complex types
             return "Mixed"; // Fallback for any other types
         }
         // Generate the Mongoose schema
@@ -157,11 +172,49 @@
             "isActive": true,
             "roles": [
                 { "role": "admin", "level": 1 },
-                { "role": "user", "access": ["read", "write"] }
+                { "role": "user", "permissions": ["read", "write"] }
             ],
+            "address": {
+                "street": "123 Main St",
+                "city": "Anytown",
+                "postalCode": 12345,
+                "location": {
+                    "latitude": 40.7128,
+                    "longitude": -74.0060,
+                    "details": {
+                        "altitude": 10,
+                        "accuracy": "high"
+                    }
+                }
+            },
             "history": [
-                { "event": "login", "timestamp": "2024-08-10T12:00:00Z" },
+                { "event": "login", "timestamp": "2024-08-10T14:30:00Z" },
                 { "event": "purchase", "item": "laptop", "price": 1200 }
+            ],
+            "metadata": {
+                "createdBy": "admin",
+                "createdAt": "2024-08-10T14:30:00Z",
+                "tags": ["user", "admin", "active"]
+            },
+            "settings": {
+                "theme": "dark",
+                "notifications": {
+                    "email": true,
+                    "sms": false
+                },
+                "preferences": {
+                    "language": "en",
+                    "timezone": "UTC",
+                    "custom": {
+                        "featureEnabled": true,
+                        "limit": 100
+                    }
+                }
+            },
+            "mixedField": [
+                { "type": "string", "value": "example" },
+                { "type": "number", "value": 42 },
+                { "type": "boolean", "value": true }
             ]
         };
         editor.set(initialJson);
