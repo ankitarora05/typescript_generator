@@ -2,37 +2,38 @@
 <html lang="en">
 
 <head>
-    <title>Mongoose Schema Generator - Automatically Generate Mongoose Schemas from JSON</title>
+    <title>TypeScript Schema Generator - Automatically Generate typescript Schemas from JSON</title>
     <!-- when using the mode "code", it's important to specify charset utf-8 -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="title" content="Mongoose Schema Generator - Automatically Generate Mongoose Schemas from JSON">
+    <meta name="title" content="TypeScript Schema Generator - Automatically Generate TypeScript Schemas from JSON">
     <meta name="description"
-        content="Easily generate Mongoose schemas from JSON objects with our Mongoose Schema Generator. Handle mixed data types, arrays, and nested objects seamlessly for MongoDB projects.">
+        content="Easily generate TypeScript schemas from JSON objects with our typescript Schema Generator. Handle mixed data types, arrays, and nested objects seamlessly for MongoDB projects.">
     <meta name="keywords"
-        content="Mongoose, Schema Generator, JSON to Schema, MongoDB, Node.js, Automated Schema, Mixed Types, Nested Objects, Arrays, JavaScript, Backend Development">
+        content="typescript, Schema Generator, JSON to Schema, MongoDB, Node.js, Automated Schema, Mixed Types, Nested Objects, Arrays, JavaScript, Backend Development">
     <meta name="author" content="Bubble Media Technology">
     <meta name="robots" content="index, follow">
     <meta name="language" content="English">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://json2mongoose.netlify.app/">
-    <meta property="og:title" content="JSON to Mongoose Schema Converter - Automatically Generate Mongoose Schema">
+    <meta property="og:url" content="https://json2typescript.netlify.app/">
+    <meta property="og:title" content="JSON to TypeScript Schema Converter - Automatically Generate TypeScript Schema">
     <meta property="og:description"
-        content="Easily convert JSON objects to Mongoose schema definitions with our JSON to Mongoose Schema Converter. Simplify backend development with auto-generated schema types for MongoDB and Node.js.">
-    <meta property="og:image" content="https://miro.medium.com/v2/resize:fit:1400/1*rL8Buu7o6jnG-TYV1WubeQ.png">
+        content="Easily convert JSON objects to TypeScript schema definitions with our JSON to TypeScript Schema Converter. Simplify backend development with auto-generated schema types for MongoDB and Node.js.">
+    <meta property="og:image" content="https://kinsta.com/wp-content/uploads/2023/04/what-is-typescript.jpeg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://json2mongoose.netlify.app/">
-    <meta property="twitter:title" content="JSON to Mongoose Schema Converter - Automatically Generate Mongoose Schema">
+    <meta property="twitter:url" content="https://json2typescript.netlify.app/">
+    <meta property="twitter:title"
+        content="JSON to TypeScript Schema Converter - Automatically Generate TypeScript Schema">
     <meta property="twitter:description"
-        content="Easily convert JSON objects to Mongoose schema definitions with our JSON to Mongoose Schema Converter. Simplify backend development with auto-generated schema types for MongoDB and Node.js.">
-    <meta property="twitter:image" content="https://miro.medium.com/v2/resize:fit:1400/1*rL8Buu7o6jnG-TYV1WubeQ.png">
+        content="Easily convert JSON objects to TypeScript schema definitions with our JSON to TypeScript Schema Converter. Simplify backend development with auto-generated schema types for MongoDB and Node.js.">
+    <meta property="twitter:image" content="https://kinsta.com/wp-content/uploads/2023/04/what-is-typescript.jpeg">
 
     <link href="/scripts/jsoneditor.css" rel="stylesheet" type="text/css">
     <script src="/scripts/jsoneditor.min.js"
@@ -78,7 +79,7 @@
             height: 75vh;
         }
 
-        #jsoneditorMongoose {
+        #jsoneditorTypeScript {
             height: 75vh;
         }
 
@@ -90,7 +91,7 @@
 
 <body>
     <div class="page-title">
-        <h2>Mongoose Schema Generator</h2>
+        <h2>TypeScript Schema Generator</h2>
     </div>
     <div class="json-container">
         <div class="json-reader">
@@ -98,8 +99,8 @@
             <div id="jsoneditor"></div>
         </div>
         <div class="json-reader">
-            <div class="json-title">Mongoose Schema</div>
-            <div id="jsoneditorMongoose"></div>
+            <div class="json-title">TypeScript Schema</div>
+            <div id="jsoneditorTypeScript"></div>
         </div>
     </div>
     <div class="page-footer">
@@ -107,43 +108,58 @@
     </div>
 
     <script await>
-        // Function to convert JSON to Mongoose schema JSON
-        function convertJsonToMongooseSchema(json) {
-            const schema = {};
+        // Function to convert JSON to TypeScript schema JSON
+        function jsonToTypeScriptInterface(json, interfaceName = "Root") {
+            let output = `interface ${interfaceName} {\n`;
 
-            for (const key in json) {
-                const value = json[key];
-
-                if (Array.isArray(value)) {
-                    if (value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
-                        // If the array contains objects, recursively generate the schema for the objects
-                        schema[key] = [convertJsonToMongooseSchema(value[0])];
+            function processObject(obj, indent = "  ") {
+                let result = "";
+                for (const key in obj) {
+                    const value = obj[key];
+                    const type = getType(value);
+                    if (type === "object" && !Array.isArray(value)) {
+                        const nestedInterfaceName = capitalize(key);
+                        result += `${indent}${key}: ${nestedInterfaceName};\n`;
+                        result += processObject(value, indent + "  ").replace(/^/, `interface ${nestedInterfaceName} {\n`).replace(/$/, `${indent}}\n`);
+                    } else if (Array.isArray(value)) {
+                        if (value.length > 0 && typeof value[0] === 'object' && value[0] !== null) {
+                            const nestedInterfaceName = capitalize(key.slice(0, -1)) + "Item";
+                            result += `${indent}${key}: ${nestedInterfaceName}[];\n`;
+                            result += processObject(value[0], indent + "  ").replace(/^/, `interface ${nestedInterfaceName} {\n`).replace(/$/, `${indent}}\n`);
+                        } else {
+                            result += `${indent}${key}: ${getArrayType(value)}[];\n`;
+                        }
                     } else {
-                        // If the array contains primitive types
-                        schema[key] = [getType(value[0])];
+                        result += `${indent}${key}: ${type};\n`;
                     }
-                } else if (typeof value === 'object' && value !== null) {
-                    // Handle nested objects by recursively generating schema
-                    schema[key] = convertJsonToMongooseSchema(value);
-                } else {
-                    // Handle primitive types
-                    schema[key] = getType(value);
                 }
+                return result;
             }
 
-            return schema;
-        }
+            function getType(value) {
+                if (typeof value === 'string') return "string";
+                if (typeof value === 'number') return "number";
+                if (typeof value === 'boolean') return "boolean";
+                if (value === null) return "null";
+                if (Array.isArray(value)) return "array";
+                if (typeof value === 'object') return "object";
+                return "any"; // Fallback for any other types
+            }
 
-        // Helper function to map JavaScript types to Mongoose schema types
-        function getType(value) {
-            if (typeof value === 'string') return "String";
-            if (typeof value === 'number') return "Number";
-            if (typeof value === 'boolean') return "Boolean";
-            if (value instanceof Date || !isNaN(Date.parse(value))) return "Date";
-            if (typeof value === 'object') return "Mixed"; // Use Mixed for unknown or complex types
-            return "Mixed"; // Fallback for any other types
+            function getArrayType(array) {
+                const types = array.map(item => getType(item)).filter((v, i, a) => a.indexOf(v) === i);
+                return types.length > 1 ? types.join(" | ") : types[0];
+            }
+
+            function capitalize(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+
+            output += processObject(json);
+            output += "}\n";
+            return output;
         }
-        // Generate the Mongoose schema
+        // Generate the TypeScript schema
 
     </script>
 
@@ -156,9 +172,8 @@
                 debugger;
                 let json = JSON.parse(jsonString.replaceAll("^\"|\"$", ""));
                 editor.set(json);
-                const initialJsonResult = convertJsonToMongooseSchema(json);
+                const initialJsonResult = jsonToTypeScriptInterface(json).replace(/\n/g,' ');
                 editorResult.set(initialJsonResult);
-                console.log(initialJsonResult)
                 const updatedJsonResult = editorResult.get();
             }
         }
@@ -225,10 +240,10 @@
 
     <script await>
         // create the editor
-        const containerResult = document.getElementById("jsoneditorMongoose")
+        const containerResult = document.getElementById("jsoneditorTypeScript")
         const optionsResult = {
-            mode: 'text',
-            modes: ['text', 'code'],
+            mode: 'code',
+            modes: ['text', 'code', 'tree', 'view', 'preview'],
             onEditable: function (node) {
                 if (!node.path) {
                     // In modes code and text, node is empty: no path, field, or value
@@ -238,7 +253,7 @@
             },
         }
         const editorResult = new JSONEditor(containerResult, optionsResult)
-        const initialJsonResult = convertJsonToMongooseSchema(initialJson);
+        const initialJsonResult = jsonToTypeScriptInterface(initialJson).replace(/\n/g,' ');
         editorResult.set(initialJsonResult);
 
         // get json
