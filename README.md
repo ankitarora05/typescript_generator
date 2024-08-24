@@ -2,6 +2,8 @@
 
 This project provides a utility function to generate TypeScript interfaces from a given JSON object. The generated interface is fully structured to handle deep nesting, mixed data types, and arrays, making it a perfect tool for developers working with TypeScript in projects where type safety and structure are crucial.
 
+Demo https://json2typescript.netlify.app/
+
 ## Features
 
 - **Deep Nesting Support:** Handles JSON objects with multiple levels of nested objects and arrays.
