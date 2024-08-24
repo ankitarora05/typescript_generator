@@ -1,14 +1,13 @@
-# Mongoose Schema Converter
+# JSON to TypeScript Interface Generator
 
-Transform your JSON data into fully functional Mongoose schemas with ease. This tool automatically generates schema definitions from JSON objects, handling mixed data types, arrays, and nested structures effortlessly. Perfect for developers looking to streamline their MongoDB projects.
+This project provides a utility function to generate TypeScript interfaces from a given JSON object. The generated interface is fully structured to handle deep nesting, mixed data types, and arrays, making it a perfect tool for developers working with TypeScript in projects where type safety and structure are crucial.
 
 ## Features
 
-- **Automatic Schema Generation**: Convert JSON objects directly into Mongoose schema definitions.
-- **Handles Complex Structures**: Supports mixed data types, arrays, and nested objects.
-- **Customizable**: Easily modify the generated schema to fit your specific needs.
-- **Streamlines Development**: Simplifies schema creation, allowing you to focus on building robust applications.
-
+- **Deep Nesting Support:** Handles JSON objects with multiple levels of nested objects and arrays.
+- **Mixed Data Types:** Automatically detects and handles different data types within arrays.
+- **Simple and Clean Output:** Generates a single, well-formatted TypeScript interface, making it easy to copy and paste directly into your project.
+  
 ## Installation
 
 Clone the repository and install the necessary dependencies:
